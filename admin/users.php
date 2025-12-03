@@ -6,6 +6,63 @@ if (!isLoggedIn() || !isAdmin()) redirect('../login.php');
 $page_title = "Manage Users";
 include 'header.php';
 
+// Handle user deletion
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_user'])) {
+    $user_id = $_POST['user_id'];
+    
+    // Prevent admin from deleting themselves
+    if ($user_id == $_SESSION['user_id']) {
+        $error = "You cannot delete your own account!";
+    } else {
+        try {
+            // Start transaction
+            $pdo->beginTransaction();
+            
+            // Get user details for reference
+            $stmt = $pdo->prepare("SELECT name, email, role FROM users WHERE id = ?");
+            $stmt->execute([$user_id]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($user) {
+                // OPTION 1: Set donations to guest/remove user reference
+                // Update donations to set donor_id to NULL or a guest user
+                $stmt = $pdo->prepare("UPDATE donations SET donor_id = NULL WHERE donor_id = ?");
+                $stmt->execute([$user_id]);
+                
+                // OPTION 2: Or delete donations first (uncomment if you want to delete donations too)
+                // $stmt = $pdo->prepare("DELETE FROM donations WHERE donor_id = ?");
+                // $stmt->execute([$user_id]);
+                
+                // Delete user's sessions if they exist
+                try {
+                    $stmt = $pdo->prepare("DELETE FROM sessions WHERE user_id = ?");
+                    $stmt->execute([$user_id]);
+                } catch(Exception $e) {
+                    // Sessions table might not exist, ignore error
+                }
+                
+                // Delete user from database
+                $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+                $stmt->execute([$user_id]);
+                
+                $pdo->commit();
+                
+                // Log the deletion
+                $deleted_user_info = $user['name'] . ' (' . $user['email'] . ')';
+                $log_message = "User deleted: ID $user_id - $deleted_user_info";
+                error_log($log_message);
+                
+                $success = "User deleted successfully! Donations have been preserved as guest donations.";
+            } else {
+                $error = "User not found!";
+            }
+        } catch(PDOException $e) {
+            $pdo->rollBack();
+            $error = "Failed to delete user: " . $e->getMessage();
+        }
+    }
+}
+
 // Get users with filters
 $role_filter = $_GET['role'] ?? '';
 $status_filter = $_GET['status'] ?? '';
@@ -123,7 +180,7 @@ $regular_users = $total_users - $total_admins;
                     </div>
                 </div>
             </div>
-        </div>
+</div>
     </div>
 
     <div class="col-xl-3 col-md-6 mb-4">
@@ -149,6 +206,27 @@ $regular_users = $total_users - $total_admins;
         </div>
     </div>
 </div>
+
+<!-- Alerts -->
+<?php if(isset($success)): ?>
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-check-circle me-2"></i>
+            <div><?php echo $success; ?></div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
+<?php if(isset($error)): ?>
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <div><?php echo $error; ?></div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
 
 <!-- Filters -->
 <div class="card shadow border-0 mb-4">
@@ -264,14 +342,18 @@ $regular_users = $total_users - $total_admins;
                                     </button>
                                     <?php if($user['id'] != $_SESSION['user_id']): ?>
                                         <?php if($user['status'] == 'active'): ?>
-                                            <button type="button" class="btn btn-outline-danger rounded-end" onclick="toggleUserStatus(<?php echo $user['id']; ?>, 'inactive')">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="toggleUserStatus(<?php echo $user['id']; ?>, 'inactive')">
                                                 <i class="fas fa-user-slash"></i>
                                             </button>
                                         <?php else: ?>
-                                            <button type="button" class="btn btn-outline-success rounded-end" onclick="toggleUserStatus(<?php echo $user['id']; ?>, 'active')">
+                                            <button type="button" class="btn btn-outline-success" onclick="toggleUserStatus(<?php echo $user['id']; ?>, 'active')">
                                                 <i class="fas fa-user-check"></i>
                                             </button>
                                         <?php endif; ?>
+                                        <!-- DELETE BUTTON -->
+                                        <button type="button" class="btn btn-outline-danger rounded-end" onclick="confirmDelete(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['name']); ?>', '<?php echo htmlspecialchars($user['email']); ?>', <?php echo $user['donation_count']; ?>)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     <?php else: ?>
                                         <button type="button" class="btn btn-outline-secondary rounded-end" disabled title="Cannot modify your own account">
                                             <i class="fas fa-ban"></i>
@@ -294,15 +376,47 @@ $regular_users = $total_users - $total_admins;
         <div class="modal-content">
             <div class="modal-header bg-gradient-primary text-white">
                 <h5 class="modal-title"><i class="fas fa-user me-2"></i>User Details</h5>
-                <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Close">
-    <i class="fas fa-times"></i>
-</button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="userDetails">
                 <!-- Content will be loaded via JavaScript -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Delete User</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this user?</p>
+                <div class="alert alert-warning">
+                    <strong>Warning:</strong> This action cannot be undone. 
+                    <?php /* Optional: Add warning about donations if needed */ ?>
+                </div>
+                <div class="card border-warning mb-3">
+                    <div class="card-body">
+                        <p><strong>User Name:</strong> <span id="deleteUserName"></span></p>
+                        <p><strong>Email:</strong> <span id="deleteUserEmail"></span></p>
+                        <p><strong>Donations Made:</strong> <span id="deleteUserDonations"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" id="deleteUserForm">
+                    <input type="hidden" name="delete_user" value="1">
+                    <input type="hidden" name="user_id" id="deleteUserId">
+                    <button type="submit" class="btn btn-danger">Delete User</button>
+                </form>
             </div>
         </div>
     </div>
@@ -373,17 +487,24 @@ document.addEventListener('DOMContentLoaded', function() {
 function toggleUserStatus(userId, status) {
     const action = status === 'active' ? 'activate' : 'deactivate';
     if(confirm(`Are you sure you want to ${action} this user?`)) {
-        // This would typically make an AJAX call to update the status
-        alert('Status update functionality would be implemented here with AJAX');
-        // For now, just reload the page
         window.location.href = `update_user.php?id=${userId}&status=${status}`;
     }
 }
 
 function editUser(userId) {
-    // Redirect to edit user page (to be implemented)
-    alert('Edit user functionality would redirect to edit_user.php');
-    // window.location.href = 'edit_user.php?id=' + userId;
+    // Redirect to edit user page
+    window.location.href = 'edit_user.php?id=' + userId;
+}
+
+// Delete user confirmation
+function confirmDelete(userId, userName, userEmail, donationCount) {
+    document.getElementById('deleteUserId').value = userId;
+    document.getElementById('deleteUserName').textContent = userName;
+    document.getElementById('deleteUserEmail').textContent = userEmail;
+    document.getElementById('deleteUserDonations').textContent = donationCount;
+    
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
+    deleteModal.show();
 }
 </script>
 
@@ -422,7 +543,7 @@ body {
     height: 60px;
     border-radius: 50%;
     display: flex;
-    align-items: center;
+    align-items-center: center;
     justify-content: center;
     font-size: 1.5rem;
 }
@@ -449,6 +570,10 @@ body {
 
 .badge {
     font-weight: 500;
+}
+
+.btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
 }
 </style>
 
