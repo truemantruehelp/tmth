@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 18, 2025 at 07:26 PM
+-- Generation Time: Feb 21, 2026 at 11:18 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -18,8 +18,41 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `tmth_db`
+-- Database: `tmth_up`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `applications`
+--
+
+CREATE TABLE `applications` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `age` int(11) DEFAULT NULL,
+  `address` text DEFAULT NULL,
+  `mobile` varchar(15) NOT NULL,
+  `fund_purpose` varchar(50) DEFAULT NULL,
+  `story` text DEFAULT NULL,
+  `urgent` tinyint(1) DEFAULT 0,
+  `id_card` varchar(255) DEFAULT NULL,
+  `photo` varchar(255) DEFAULT NULL,
+  `proof` varchar(255) DEFAULT NULL,
+  `ref_name` varchar(100) DEFAULT NULL,
+  `status` enum('pending','approved','rejected') DEFAULT 'pending',
+  `notes` text DEFAULT NULL,
+  `application_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `applications`
+--
+
+INSERT INTO `applications` (`id`, `name`, `age`, `address`, `mobile`, `fund_purpose`, `story`, `urgent`, `id_card`, `photo`, `proof`, `ref_name`, `status`, `notes`, `application_date`, `updated_at`) VALUES
+(4, 'Aklima', 70, 'Habiganj', '01712345678', 'food', 'this old woman has no one to support for her basic food.', 1, '1765227116_01712345678_id_card.jpg', '1765227116_01712345678_photo.jpg', NULL, NULL, 'approved', '', '2025-12-08 20:51:56', '2025-12-09 19:10:44'),
+(6, 'Istiak', 45, 'Dhaka', '01751234567', 'medical', 'need urgent help', 1, NULL, NULL, NULL, 'John', 'pending', NULL, '2025-12-09 18:07:12', '2026-02-21 09:25:24');
 
 -- --------------------------------------------------------
 
@@ -143,6 +176,15 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `address`, `rol
 --
 
 --
+-- Indexes for table `applications`
+--
+ALTER TABLE `applications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_mobile` (`mobile`),
+  ADD KEY `idx_created` (`application_date`);
+
+--
 -- Indexes for table `campaigns`
 --
 ALTER TABLE `campaigns`
@@ -178,6 +220,12 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `applications`
+--
+ALTER TABLE `applications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `campaigns`
