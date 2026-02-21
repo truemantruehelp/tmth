@@ -2081,17 +2081,16 @@ $is_homepage = (basename($_SERVER['PHP_SELF']) == 'index.php');
                     <li class="nav-item">
                         <a class="nav-link" href="campaigns.php">Campaigns</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#our-story">About</a>
-                    </li>
+                    
                     <li class="nav-item">
                         <a class="nav-link" href="gallery.php">Gallery</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#real-impact-stories">Blog</a>
-                    </li>
+                   
                     <li class="nav-item">
                         <a class="nav-link" href="#footer-contact">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="application.php">Application</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
