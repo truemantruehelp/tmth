@@ -54,6 +54,9 @@ function loginUser($email, $password) {
     $user = getUserByEmail($email);
     
     if ($user && password_verify($password, $user['password'])) {
+        session_regenerate_id(true);
+        $_SESSION['password_authenticated'] = true;
+        unset($_SESSION['guest_user']);
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['user_email'] = $user['email'];
@@ -75,6 +78,9 @@ function loginUserWithEmailOrPhone($login, $password) {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($user && password_verify($password, $user['password'])) {
+        session_regenerate_id(true);
+        $_SESSION['password_authenticated'] = true;
+        unset($_SESSION['guest_user']);
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['user_email'] = $user['email'];
@@ -273,7 +279,9 @@ function autoLoginUser($user_id) {
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if ($user) {
+    if ($user && $user['role'] === 'user' && (int) ($user['is_guest'] ?? 0) === 1) {
+        session_regenerate_id(true);
+        unset($_SESSION['password_authenticated']);
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['user_email'] = $user['email'];

@@ -260,6 +260,7 @@ body.sidebar-collapsed .main-content { margin-left: var(--sidebar-collapsed); }
     <a href="applications.php" class="menu-item"><i class="fas fa-file-alt"></i><span class="menu-text">Applications</span></a>
     
     <a href="reports.php" class="menu-item"><i class="fas fa-chart-bar"></i><span class="menu-text">Reports</span></a>
+    <a href="program_requests.php" class="menu-item"><i class="fas fa-list"></i><span class="menu-text">GP and training requests</span></a>
     <a href="users.php" class="menu-item"><i class="fas fa-users"></i><span class="menu-text">Users</span></a>
      
   </nav>
