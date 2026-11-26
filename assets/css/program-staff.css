@@ -1,0 +1,38 @@
+:root {
+    font-family: system-ui, sans-serif;
+    line-height: 1.55;
+    color: #172b36;
+    background: #fff;
+}
+
+body { margin: 0; }
+.wrap { width: min(72rem, calc(100% - 2rem)); margin-inline: auto; }
+main { padding-block: 2rem; }
+h1, h2 { line-height: 1.2; margin-top: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); margin-bottom: .6rem; }
+a { color: #005b72; text-underline-offset: .18em; }
+.masthead { background: #123642; color: #fff; border-bottom: .35rem solid #3da88e; }
+.masthead .wrap { padding-block: 1rem; }
+.masthead strong { display: block; font-size: 1.2rem; margin-bottom: .3rem; }
+.masthead nav, .pagination { display: flex; gap: .4rem 1rem; flex-wrap: wrap; }
+.masthead a { color: #fff; }
+:focus-visible { outline: 3px solid #fbc64a; outline-offset: 2px; box-shadow: 0 0 0 2px #172b36; }
+.skip-link { position: absolute; inset-inline-start: 1rem; top: -5rem; padding: .5rem 1rem; background: #fff; }
+.skip-link:focus { top: .5rem; }
+.filters, .status-form { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; }
+.filters { background: #edf5f3; padding: 1rem; margin-block: 1.5rem; }
+label { font-weight: 600; }
+label input, label select { display: block; margin-top: .25rem; }
+input, select, button { font: inherit; min-height: 2.75rem; padding: .35rem .65rem; box-sizing: border-box; }
+input, select { border: 1px solid #526975; background: #fff; color: #172b36; max-width: 100%; }
+button { background: #006452; color: #fff; font-weight: 600; border: 1px solid #006452; cursor: pointer; }
+button:hover { background: #004838; }
+.notice { padding: .75rem 1rem; border-inline-start: .3rem solid #006452; background: #edf5f3; }
+.error { border-color: #a4202d; background: #fff3f3; }
+.table-scroll { overflow-x: auto; margin-bottom: 1rem; }
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th, td { padding: .8rem; border-bottom: 1px solid #b7c9cc; vertical-align: top; }
+thead { background: #edf5f3; }
+th small { display: block; font-weight: normal; }
+.status-form { min-width: 11rem; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

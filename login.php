@@ -1,36 +1,34 @@
 <?php
 // login.php
 require_once 'includes/config.php';
+require_once 'includes/program_access.php';
+$programLogin = filter_input(INPUT_GET, 'next') === 'programs';
 $page_title = "Login";
 
 // Check if already logged in
-if (isLoggedIn()) {
-    if (isAdmin()) {
-        redirect('admin/index.php');
-    } else {
-        redirect('dashboard.php');
-    }
+if (isLoggedIn() && (!$programLogin || !empty($_SESSION['password_authenticated']))) {
+    redirect($programLogin ? 'admin/program_requests.php' : programLoginDestination($pdo));
 }
 
+header('Cache-Control: no-store, private');
+$_SESSION['login_token'] ??= bin2hex(random_bytes(32));
 $error = '';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $login = trim($_POST['login']); // Can be email or phone
-    $password = trim($_POST['password']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token = (string) filter_input(INPUT_POST, 'token');
+    $login = trim((string) filter_input(INPUT_POST, 'login'));
+    $password = trim((string) filter_input(INPUT_POST, 'password'));
 
-    if (empty($login) || empty($password)) {
-        $error = "Please enter both email/phone and password!";
+    if (!hash_equals($_SESSION['login_token'], $token)) {
+        http_response_code(403);
+        $error = 'Your sign-in session expired. Try again.';
+    } elseif ($login === '' || $password === '') {
+        $error = 'Please enter both email/phone and password.';
+    } elseif (loginUserWithEmailOrPhone($login, $password)) {
+        unset($_SESSION['login_token']);
+        redirect($programLogin ? 'admin/program_requests.php' : programLoginDestination($pdo));
     } else {
-        // Try to login with email or phone using the function from functions.php
-        if (loginUserWithEmailOrPhone($login, $password)) {
-            if (isAdmin()) {
-                redirect('admin/index.php');
-            } else {
-                redirect('dashboard.php');
-            }
-        } else {
-            $error = "Invalid login credentials!";
-        }
+        $error = 'Invalid login credentials.';
     }
 }
 ?>
@@ -429,7 +427,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
             <?php endif; ?>
 
-            <form method="POST" action="">
+            <form method="POST" action="<?= $programLogin ? 'login.php?next=programs' : 'login.php' ?>">
+                <input type="hidden" name="token" value="<?= $_SESSION['login_token'] ?>">
                 <div class="input-group">
                     <i class="fas fa-user input-icon"></i>
                     <input type="text" class="form-control" id="login" name="login"

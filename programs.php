@@ -9,7 +9,8 @@ unset($_SESSION['program_request_received']);
 $error = '';
 $name = '';
 $phone = '';
-$selected = 'gp';
+$selected = (string) filter_input(INPUT_GET, 'program');
+$selected = isset($programs[$selected]) ? $selected : 'gp';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim((string) filter_input(INPUT_POST, 'name'));
@@ -50,14 +51,13 @@ include __DIR__ . '/includes/header.php';
 ?>
 <main class="container py-5" lang="bn">
     <h1>স্বাস্থ্যসেবা ও দক্ষতা উন্নয়ন</h1>
-    <?php if (isLoggedIn() && isAdmin()): ?>
-        <a class="btn btn-outline-primary" href="admin/program_requests.php">Manage GP and training requests</a>
-    <?php endif; ?>
+
     <div class="row g-4 my-3">
         <section class="col-md-6" id="gp">
             <div class="card p-4 h-100">
                 <h2 class="h4">TMTH GP</h2>
                 <p>চিকিৎসকের সঙ্গে প্রাথমিক পরামর্শের জন্য অ্যাপয়েন্টমেন্টের অনুরোধ পাঠান।</p>
+                <a class="btn btn-primary align-self-start mb-2" href="?program=gp#request">অ্যাপয়েন্টমেন্টের অনুরোধ করুন</a>
                 <a href="tel:+8801859135478">GP সেবা সম্পর্কে ফোন করুন</a>
             </div>
         </section>
@@ -65,6 +65,7 @@ include __DIR__ . '/includes/header.php';
             <div class="card p-4 h-100">
                 <h2 class="h4">দক্ষতা উন্নয়ন প্রশিক্ষণ</h2>
                 <p>কম্পিউটারের প্রাথমিক দক্ষতা বিষয়ক প্রশিক্ষণের পরবর্তী ব্যাচের জন্য আগ্রহ জানান।</p>
+                <a class="btn btn-primary align-self-start mb-2" href="?program=training#request">প্রশিক্ষণে আগ্রহ জানান</a>
                 <a href="tel:+8801859135478">প্রশিক্ষণ সম্পর্কে ফোন করুন</a>
             </div>
         </section>
@@ -99,5 +100,6 @@ include __DIR__ . '/includes/header.php';
             <button class="btn btn-primary" type="submit">অনুরোধ জমা দিন</button>
         </form>
     </section>
+    <p class="mt-4"><a href="admin/program_requests.php" lang="en">Staff sign-in</a></p>
 </main>
 <?php include __DIR__ . '/includes/footer.php'; ?>
