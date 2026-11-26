@@ -2092,6 +2092,9 @@ $is_homepage = (basename($_SERVER['PHP_SELF']) == 'index.php');
                     <li class="nav-item">
                         <a class="nav-link" href="application.php">Application</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="programs.php">GP &amp; Training</a>
+                    </li>
                 </ul>
                 <ul class="navbar-nav">
                     <?php if (isset($_SESSION['user_id'])): ?>
