@@ -36,3 +36,12 @@ thead { background: #edf5f3; }
 th small { display: block; font-weight: normal; }
 .status-form { min-width: 11rem; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.workflow-form { display: grid; gap: 1rem; max-width: 48rem; }
+.workflow-form label { display: grid; gap: .35rem; }
+.workflow-form textarea { min-height: 6rem; font: inherit; }
+.workflow-form button { justify-self: start; }
+.workflow-record { padding-block: 1rem; border-bottom: 1px solid #d6dde3; }
+dt { font-weight: 650; }
+dd { margin: 0 0 .7rem; overflow-wrap: anywhere; }
+@media print { .screen-only { display: none; } }

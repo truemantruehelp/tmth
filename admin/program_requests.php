@@ -155,7 +155,11 @@ include __DIR__ . '/../includes/program_staff_header.php';
                 <?php foreach ($requests as $request): ?>
                     <?php $id = (int) $request['id']; ?>
                     <tr>
-                        <th scope="row"><?= programEscape($request['applicant_name']) ?><small>Request <?= $id ?></small></th>
+                        <th scope="row"><?= programEscape($request['applicant_name']) ?><small>Request <?= $id ?></small>
+                            <?php if ($request['program'] === 'training' || $access === 'gp'): ?>
+                                <a href="program_case.php?id=<?= $id ?>"><?= $request['program'] === 'gp' ? 'Patient consultations' : 'Open application' ?></a>
+                            <?php endif; ?>
+                        </th>
                         <td><a href="tel:<?= programEscape($request['phone']) ?>"><?= programEscape($request['phone']) ?></a></td>
                         <?php if ($isProgrammeAdmin): ?><td><?= $programmes[$request['program']] ?></td><?php endif; ?>
                         <td><?= programEscape($request['created_at']) ?></td>
