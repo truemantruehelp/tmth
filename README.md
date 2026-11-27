@@ -22,3 +22,19 @@ intake and staff workspaces.
 The public form collects the applicant's name, mobile number and programme.
 TMTH staff arrange appointments and training places by phone. Status changes
 are recorded in `tmth_program_status_history`.
+
+### Consultation and application workflows
+
+Apply `sql/gp_training_workflows.sql` after the two migrations above and
+before releasing the updated PHP. Existing requests remain available. Older
+training requests display the contact details collected at the time.
+
+- Doctors open **Patient consultations** from a GP request to record an
+  assessment, recommendations, follow-up and an optional prescription. Print
+  the prescription from consultation history and sign it before issuing it.
+  Every saved consultation stays in the request history. Each history belongs
+  to its request. Admin staff retain access to the GP intake queue.
+- Applicants select **Skill Development Training** to open the full application
+  form. Trainers and admins open **Open application** to view the application,
+  record a decision, and enter a batch reference for acceptance or completion.
+  Applicants receive the outcome by phone.
